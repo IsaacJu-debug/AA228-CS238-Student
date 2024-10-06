@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Structure Learning",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/project1/project1.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/project1",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": false,
+        }
+    ]
+}
