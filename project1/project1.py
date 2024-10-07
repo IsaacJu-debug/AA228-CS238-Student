@@ -8,9 +8,9 @@ import time
 from tqdm import tqdm
 
 import os
-from uti import visualize_dag_graphviz
+from graph_utils import visualize_dag_graphviz
 
-def learn_bayesian_network(file_name, alg_opt= 'vanilla'):
+def learn_bayesian_network(file_name, alg_opt= 'vanilla', seed=42):
     start_time = time.time()
     input_path = os.path.join('./data', file_name + '.csv')
     df = pd.read_csv(input_path)
@@ -20,7 +20,7 @@ def learn_bayesian_network(file_name, alg_opt= 'vanilla'):
     # Learn network structure using K2 algorithm
 
     if alg_opt.lower() == "vanilla":
-        learned_graph, best_score = k2_structure_learning(data_array)
+        learned_graph, best_score = k2_structure_learning(data_array, seed=seed)
     else:
         pass
     end_time = time.time()
@@ -33,20 +33,21 @@ def learn_bayesian_network(file_name, alg_opt= 'vanilla'):
     os.makedirs(results_dir, exist_ok=True)
     
     # Write results to files
-    output_gph = os.path.join(results_dir, file_name + '.gph')
-    output_gml = os.path.join(results_dir, file_name + '.gml')
-    output_pdf = os.path.join(results_dir, file_name + '_graph.pdf')
+    output_gph = os.path.join(results_dir, file_name + f'_{seed}.gph')
+    output_gml = os.path.join(results_dir, file_name + f'_{seed}.gml')
+    output_pdf = os.path.join(results_dir, file_name + f'_{seed}_graph.pdf')
 
     write_graph_structure(learned_graph, index_to_name, output_gph)
     nx.write_gml(learned_graph, output_gml)
 
-    visualize_dag_graphviz(learned_graph, index_to_name, output_pdf)
+    visualize_dag_graphviz(learned_graph, index_to_name=index_to_name, output_path=output_pdf)
     #visualize_dag(learned_graph, index_to_name, output_pdf)
     print(f"Output written to {output_gph} and {output_gml}")
     print(f"Graph visualization saved to {output_pdf}")
 
-def k2_structure_learning(data):
+def k2_structure_learning(data, seed=42):
 
+    random.seed(seed)
     num_variables = data.shape[1]
     variable_order = list(range(num_variables))
     random.shuffle(variable_order)
@@ -128,9 +129,10 @@ def write_graph_structure(graph, index_to_name, filename):
 if __name__ == '__main__':
 
     #file_list = ['small']
+    seed = 10
     alg_list = ['vanilla']
     file_list = ['small', 'medium', 'large']
     for file in file_list:
         for alg in alg_list:
             print(f"Processing {file} dataset with {alg}...")
-            learn_bayesian_network(file, alg_opt=alg)
+            learn_bayesian_network(file, alg_opt=alg, seed=seed)

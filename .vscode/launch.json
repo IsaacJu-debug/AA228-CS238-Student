@@ -12,6 +12,28 @@
                 "PYTHONPATH": "${workspaceFolder}"
             },
             "justMyCode": false,
+        },
+        {
+            "type": "julia",
+            "request": "launch",
+            "name": "Debug Julia Structure Learning",
+            "program": "${workspaceFolder}/project1/project1.jl",
+            "stopOnEntry": false,
+            "cwd": "${workspaceFolder}/project1",
+            "juliaEnv": "${command:activeJuliaEnvironment}",
+            "args": []
+        },
+        {
+            "name": "Debug reading GML",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/project1/visualize_graph.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/project1",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "justMyCode": false,
         }
     ]
 }
