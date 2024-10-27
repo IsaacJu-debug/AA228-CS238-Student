@@ -269,7 +269,59 @@ function calculate_bayesian_score(data::Matrix{Int}, graph::SimpleDiGraph)
     return sum(calculate_bayesian_score_component(M[i], alpha[i]) for i in 1:num_variables)
 end
 
+
+function learn_bayesian_network_with_sensitivity(file_name::String,
+                                                 num_trials::Int=20, 
+                                                 alg_opt::String="vanilla")
+    best_score = -Inf  # Initialize with negative infinity as we're looking for the highest score
+    best_seed = 0
+    best_graph = nothing
+    
+    variable_names = nothing
+    for _ in 1:num_trials
+        seed = rand(1:10000)  # Generate a random seed
+        
+        input_path = joinpath("./data", file_name * ".csv")
+        df = CSV.read(input_path, DataFrame)
+        variable_names = names(df)
+        data_array = Matrix(df)
+        
+        start_time = time()
+        
+        if lowercase(alg_opt) == "vanilla"
+            learned_graph, current_score = k2_structure_learning(data_array, seed)
+        else
+            error("Unsupported algorithm option")
+        end
+        
+        end_time = time()
+        @printf("Execution time for seed %d (seconds): %.2f\n", seed, (end_time - start_time))
+        
+        if current_score > best_score
+            best_score = current_score
+            best_seed = seed
+            best_graph = learned_graph
+        end
+    end
+    
+    println("Best Bayesian Score: ", best_score)
+    println("Best Seed: ", best_seed)
+    
+    index_to_name = Dict(idx => name for (idx, name) in enumerate(variable_names))
+    
+    results_dir = "./sens_results"
+    mkpath(results_dir)
+    
+    output_gph = joinpath(results_dir, "$(file_name).gph")
+    write_graph_structure(best_graph, index_to_name, output_gph)
+    println("Saved best graph to: $output_gph")
+    
+    return best_score, best_seed
+end
+
+
 # Main execution
+#=
 seed = 10
 alg_list = ["vanilla"]
 file_list = ["small", "medium", "large"]
@@ -279,4 +331,22 @@ for file in file_list
         println("Processing $file dataset with $alg with Julia")
         learn_bayesian_network(file, alg, seed)
     end
+end
+=#
+
+
+file_list = ["small", "medium", "large"]
+num_trials = 20  # Number of random seeds to try
+best_scores = Dict()  # To store the best score for each dataset
+
+for file in file_list
+    println("Processing $file dataset")
+    best_score, best_seed = learn_bayesian_network_with_sensitivity(file, num_trials)
+    best_scores[file] = (score = best_score, seed = best_seed)
+end
+
+# Print overall results
+println("\nOverall Best Scores:")
+for (file, result) in best_scores
+    println("$file dataset: Score = $(result.score), Seed = $(result.seed)")
 end
